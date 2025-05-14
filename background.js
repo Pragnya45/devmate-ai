@@ -53,62 +53,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-// async function analyzeSelectionWithAI(text, apiKey) {
-//   console.log(text, apiKey);
-//   if (!apiKey) return window.alert("Missing API key");
-
-//   try {
-//     const response = await fetch("https://api.openai.com/v1/chat/completions", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${apiKey}`,
-//       },
-//       body: JSON.stringify({
-//         model: "gpt-4o", //"gpt-4o",
-//         messages: [{ role: "user", content: `Explain this: ${text}` }],
-//       }),
-//     });
-//     console.log("Fetch response:", response);
-
-//     const data = await response.json();
-//     console.log(data);
-
-//     return data.choices?.[0]?.message?.content || "No response from AI";
-//   } catch (err) {
-//     return "Error: " + err.message;
-//   }
-// }
-
-// async function analyzeSelectionWithAI(text, apiKey) {
-//   console.log(text, apiKey);
-//   if (!apiKey) return window.alert("Missing API key");
-
-//   try {
-//     const response = await fetch(
-//       "https://api.groq.com/openai/v1/chat/completions",
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${apiKey}`,
-//         },
-//         body: JSON.stringify({
-//           model: "mixtral-8x7b-32768", // You can also use "llama3-70b-8192" or others supported
-//           messages: [{ role: "user", content: `Explain this: ${text}` }],
-//         }),
-//       }
-//     );
-
-//     const data = await response.json();
-//     console.log(data);
-
-//     return data.choices?.[0]?.message?.content || "No response from Groq AI";
-//   } catch (err) {
-//     return "Error: " + err.message;
-//   }
-// }
-
 async function analyzeSelectionWithAI(text, apiKey) {
   if (!apiKey) {
     window.alert("Missing API key");

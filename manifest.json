@@ -9,7 +9,17 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/devmate-icon.png",
+      "24": "assets/devmate-icon.png",
+      "32": "assets/devmate-icon.png"
+    }
+  },
+  "icons": {
+    "16": "assets/devmate-icon.png",
+    "48": "assets/devmate-icon.png",
+    "128": "assets/devmate-icon.png"
   },
   "content_scripts": [
     {
