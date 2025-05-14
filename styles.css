@@ -1,0 +1,41 @@
+body {
+  font-family: monospace;
+  background: #1e1e1e;
+  color: #c5c5c5;
+  padding: 10px;
+}
+
+#log-container {
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+
+textarea {
+  background-color: #282c34;
+  color: #ffffff;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+button {
+  background-color: #61dafb;
+  color: #000;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#sidebar {
+  transition: right 0.3s ease; /* Smooth transition when sidebar appears */
+}
+
+#sidebar.closed {
+  right: -300px; /* Initially hidden to the right */
+}
+
+#sidebar.open {
+  right: 0; /* Visible when open */
+}

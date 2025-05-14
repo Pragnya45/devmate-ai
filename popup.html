@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevMate Popup</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        padding: 20px;
+        width: 350px;
+        background: linear-gradient(135deg, #4a90e2, #50e3c2);
+        box-sizing: border-box;
+        animation: fadeIn 1s ease-out;
+      }
+
+      h3 {
+        margin-bottom: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #fff;
+        text-align: center;
+        opacity: 0;
+        animation: fadeIn 1s ease-out 0.5s forwards;
+      }
+
+      textarea {
+        width: 90%;
+        height: 100px;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        resize: none;
+        font-size: 14px;
+        background-color: #fff;
+        transition: border 0.3s ease;
+        opacity: 0;
+        animation: fadeIn 1s ease-out 0.7s forwards;
+      }
+
+      textarea:focus {
+        border-color: #50e3c2;
+        outline: none;
+        box-shadow: 0 0 5px rgba(80, 227, 194, 0.7);
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        background-color: #50e3c2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        opacity: 0;
+        animation: fadeIn 1s ease-out 0.9s forwards;
+      }
+
+      button:hover {
+        background-color: #357ab7;
+      }
+
+      button:active {
+        background-color: #2a5b8d;
+      }
+
+      pre {
+        background-color: #e7e7e7;
+        color: #333;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin-top: 15px;
+        box-sizing: border-box;
+        height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        opacity: 0;
+        animation: fadeIn 1s ease-out 1.1s forwards;
+      }
+
+      #output {
+        color: #333;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Small screen support */
+      @media (max-width: 400px) {
+        body {
+          width: 280px;
+        }
+
+        textarea {
+          height: 80px;
+        }
+
+        button {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h3>DevMate AI</h3>
+    <textarea id="input" placeholder="Paste text or error..."></textarea>
+    <button id="analyze">Analyze</button>
+    <pre id="output">AI output will appear here...</pre>
+
+    <!-- Scripts (Order matters!) -->
+    <script src="openai.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

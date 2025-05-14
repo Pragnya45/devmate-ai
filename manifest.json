@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "DevMate AI",
+  "version": "1.0",
+  "description": "AI-powered assistant for developers – explain console errors and summarize text.",
+  "permissions": ["contextMenus", "scripting", "tabs", "storage", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "devtools_page": "devtools.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css", "config.json", "sidebar.js", "sidebar.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "connect-src https://openrouter.ai https://api.openai.com; script-src 'self'; object-src 'self';"
+  }
+}
