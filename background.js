@@ -1,64 +1,77 @@
+console.log("[background.js] Script loaded");
 fetch(chrome.runtime.getURL("config.json"))
-  .then((response) => response.json())
+  .then((res) => res.json())
   .then((config) => {
     chrome.storage.local.set({ openaiKey: config.OPENAI_API_KEY });
   });
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Creating context menu...");
+  console.log("[background.js] onInstalled event fired");
   chrome.contextMenus.create({
     id: "devmate-analyze",
     title: "Ask DevMate AI",
     contexts: ["selection"],
   });
+  console.log("[background.js] Context menu created");
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "devmate-analyze") {
-    chrome.storage.local.get("openaiKey", async (data) => {
-      const apiKey = data.openaiKey;
-      const text = info.selectionText;
+    console.log(
+      "[background.js] Context menu clicked with selected text:",
+      info.selectionText
+    );
+    const selectedText = info.selectionText;
 
-      // Inject the sidebar HTML and loading spinner
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["sidebar.js"], // <-- injects sidebar HTML
-      });
+    // Save selected text so sidebar can access it
+    await chrome.storage.local.set({ selectedText });
+    console.log("[background.js] Selected text saved to storage");
+    // Inject sidebar HTML
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: async () => {
+        if (!document.getElementById("sidebar")) {
+          const res = await fetch(chrome.runtime.getURL("sidebar.html"));
+          const html = await res.text();
+          const div = document.createElement("div");
+          div.innerHTML = html;
+          document.body.appendChild(div.firstElementChild); // append only the #sidebar div
+          console.log("[sidebar injection] sidebar.html injected");
+        }
+      },
+    });
 
-      // Show loading state
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (state) => {
-          document.getElementById("loadingSpinner").style.display = "block";
-          document.getElementById("aiResponseContent").style.display = "none";
-        },
-        args: ["loading"],
-      });
-
-      // Fetch explanation
-      const result = await analyzeSelectionWithAI(text, apiKey);
-
-      // Show result in sidebar
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (aiResponse) => {
-          document.getElementById("loadingSpinner").style.display = "none";
-          const responseEl = document.getElementById("aiResponseContent");
-          responseEl.textContent = aiResponse;
-          responseEl.style.display = "block";
-        },
-        args: [result],
-      });
+    // Inject sidebar.js to run sidebar logic
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["sidebar.js"],
     });
   }
 });
 
-async function analyzeSelectionWithAI(text, apiKey) {
-  if (!apiKey) {
-    window.alert("Missing API key");
-    return;
-  }
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "devmate-get-ai-response") {
+    console.log(
+      "[background.js] Received AI request with prompt:",
+      message.prompt
+    );
+    chrome.storage.local.get("openaiKey", async (data) => {
+      const apiKey = data.openaiKey;
+      console.log(apiKey);
+      const result = await analyzeWithOpenAI(message.prompt, apiKey);
+      console.log("[background.js] AI response received:", result);
+      sendResponse({ result });
+    });
 
+    return true; // Required for async sendResponse
+  }
+});
+
+async function analyzeWithOpenAI(text, apiKey) {
+  console.log(
+    "[background.js] Sending request to OpenRouter AI for text:",
+    text
+  );
   try {
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -67,8 +80,7 @@ async function analyzeSelectionWithAI(text, apiKey) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
-          "HTTP-Referer": "https://yourapp.example.com", // Optional: Replace with your app's URL
-          "X-Title": "Explain Selected Text", // Optional: Title for your application
+          "X-Title": "DevMate AI",
         },
         body: JSON.stringify({
           model: "deepseek/deepseek-r1",
@@ -80,7 +92,7 @@ async function analyzeSelectionWithAI(text, apiKey) {
             },
             {
               role: "user",
-              content: `Explain this:\n\n"${text}"`,
+              content: text,
             },
           ],
           temperature: 0.7,
@@ -90,8 +102,7 @@ async function analyzeSelectionWithAI(text, apiKey) {
     );
 
     const data = await response.json();
-    console.log("OpenRouter response:", data);
-
+    console.log("[background.js] OpenRouter AI response:", data);
     return (
       data.choices?.[0]?.message?.content ||
       data?.error?.message ||
@@ -100,30 +111,4 @@ async function analyzeSelectionWithAI(text, apiKey) {
   } catch (err) {
     return "Error: " + err.message;
   }
-}
-function displayInSidebar(aiResponse) {
-  const sidebar = document.getElementById("sidebar");
-  const aiResponseContent = document.getElementById("aiResponseContent");
-  const loadingSpinner = document.getElementById("loadingSpinner");
-
-  // Show the sidebar
-  sidebar.style.display = "block";
-
-  // If we're still loading, show the spinner
-  if (aiResponse === "loading") {
-    aiResponseContent.style.display = "none";
-    loadingSpinner.style.display = "block"; // Show the loading spinner
-  } else {
-    // Otherwise, hide the spinner and show the response
-    loadingSpinner.style.display = "none";
-    aiResponseContent.textContent = aiResponse;
-    aiResponseContent.style.display = "block";
-  }
-
-  // Close button functionality
-  document
-    .getElementById("closeSidebar")
-    .addEventListener("click", function () {
-      sidebar.style.display = "none";
-    });
 }

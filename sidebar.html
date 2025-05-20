@@ -1,132 +1,28 @@
-<!-- sidebar.html -->
-<div
-  id="sidebar"
-  style="
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 320px;
-    height: 100%;
-    background: linear-gradient(135deg, #4a90e2, #50e3c2);
-    box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 999999;
-    display: block;
-    font-family: 'Arial', sans-serif;
-    box-sizing: border-box;
-    animation: fadeIn 0.8s ease-out;
-  "
->
-  <style>
-    #container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #sidebar h3 {
-      margin-bottom: 15px;
-      font-size: 22px;
-      font-weight: bold;
-      color: #fff;
-      text-align: center;
-      opacity: 0;
-      animation: fadeIn 1s ease-out 0.4s forwards;
-    }
-
-    #sidebar button {
-      padding: 10px 15px;
-      background-color: #50e3c2;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      animation: fadeIn 1s ease-out 0.2s forwards;
-    }
-
-    #sidebar button:hover {
-      background-color: #357ab7;
-    }
-
-    #sidebar button:active {
-      background-color: #2a5b8d;
-    }
-
-    #loadingSpinner {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .spinner {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #50e3c2;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    #aiResponseContent {
-      background-color: #e7e7e7;
-      color: #333;
-      padding: 15px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 400;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      margin-top: 20px;
-      box-sizing: border-box;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      display: none;
-      opacity: 0;
-      height: 100%;
-      max-height: calc(85vh - 20px);
-      overflow-y: auto;
-      animation: fadeIn 1s ease-out 0.8s forwards;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-  </style>
-
+<div id="sidebar">
   <div id="container">
     <h3>DevMate AI</h3>
     <button id="closeSidebar">Close</button>
   </div>
 
   <div style="position: relative; height: 80vh">
-    <div
-      id="loadingSpinner"
-      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
-    >
-      <div class="spinner"></div>
+    <div id="loadingSpinner"><div class="spinner"></div></div>
+    <div id="aiResponseBox" style="display: none">
+      <h4>🤖 AI Response</h4>
+
+      <div id="aiResponseContent"></div>
     </div>
 
-    <div id="aiResponseContent"></div>
+    <div id="wikiSummary" style="margin-top: 20px; display: none">
+      <h4>📘 Wikipedia Summary</h4>
+      <div id="wikiContent"></div>
+    </div>
+
+    <div
+      id="trustedLinks"
+      style="margin-top: 20px; margin-bottom: 30px; display: none"
+    >
+      <h4>🔗 Trusted Links</h4>
+      <ul id="linkList"></ul>
+    </div>
   </div>
 </div>
