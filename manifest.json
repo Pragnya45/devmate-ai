@@ -11,15 +11,17 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "assets/devmate-icon.png",
-      "24": "assets/devmate-icon.png",
-      "32": "assets/devmate-icon.png"
+      "16": "./icons/devmate-icon.png",
+      "32": "./icons/devmate-icon.png",
+      "48": "./icons/devmate-icon.png",
+      "128": "./icons/devmate-icon.png"
     }
   },
   "icons": {
-    "16": "assets/devmate-icon.png",
-    "48": "assets/devmate-icon.png",
-    "128": "assets/devmate-icon.png"
+    "16": "./icons/devmate-icon.png",
+    "32": "./icons/devmate-icon.png",
+    "48": "./icons/devmate-icon.png",
+    "128": "./icons/devmate-icon.png"
   },
   "content_scripts": [
     {
@@ -28,14 +30,18 @@
       "run_at": "document_idle"
     }
   ],
-  "devtools_page": "devtools.html",
   "web_accessible_resources": [
     {
-      "resources": ["styles.css", "config.json", "sidebar.js", "sidebar.html"],
+      "resources": [
+        "config.json",
+        "sidebar.js",
+        "sidebar.html",
+        "assets/chevron.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "connect-src https://openrouter.ai https://api.openai.com; script-src 'self'; object-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://api.openai.com https://openrouter.ai https://youtubetranscript.com https://www.youtube.com"
   }
 }

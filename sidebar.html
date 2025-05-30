@@ -3,13 +3,13 @@
     <h3>DevMate AI</h3>
     <button id="closeSidebar">Close</button>
   </div>
-
   <div style="position: relative; height: 80vh">
     <div id="loadingSpinner"><div class="spinner"></div></div>
     <div id="aiResponseBox" style="display: none">
       <h4>🤖 AI Response</h4>
 
       <div id="aiResponseContent"></div>
+      <div id="explanations-container" style="display: none"></div>
     </div>
 
     <div id="wikiSummary" style="margin-top: 20px; display: none">
@@ -24,5 +24,14 @@
       <h4>🔗 Trusted Links</h4>
       <ul id="linkList"></ul>
     </div>
+    <div
+      id="similarVideosBox"
+      class="mt-4 hidden bg-white p-2 rounded shadow-sm text-sm text-gray-800"
+    ></div>
   </div>
+  <div id="resizer"></div>
+
+  <!-- <div>
+    <img src="assets/chevron.png" alt="Resize" />
+  </div> -->
 </div>

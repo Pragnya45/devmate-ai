@@ -12,43 +12,55 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Ask DevMate AI",
     contexts: ["selection"],
   });
-  console.log("[background.js] Context menu created");
+  chrome.contextMenus.create({
+    id: "summarize-page",
+    title: "🧠 Summarize This Page",
+    contexts: ["page"],
+  });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  const tabId = tab.id;
   if (info.menuItemId === "devmate-analyze") {
     console.log(
       "[background.js] Context menu clicked with selected text:",
       info.selectionText
     );
     const selectedText = info.selectionText;
-
-    // Save selected text so sidebar can access it
     await chrome.storage.local.set({ selectedText });
-    console.log("[background.js] Selected text saved to storage");
-    // Inject sidebar HTML
+    await injectSidebar(tabId);
+  }
+  if (info.menuItemId === "summarize-page") {
+    await chrome.storage.local.remove("selectedText");
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: async () => {
-        if (!document.getElementById("sidebar")) {
-          const res = await fetch(chrome.runtime.getURL("sidebar.html"));
-          const html = await res.text();
-          const div = document.createElement("div");
-          div.innerHTML = html;
-          document.body.appendChild(div.firstElementChild); // append only the #sidebar div
-          console.log("[sidebar injection] sidebar.html injected");
-        }
-      },
+      files: ["content.js"],
     });
-
-    // Inject sidebar.js to run sidebar logic
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ["sidebar.js"],
-    });
+    await injectSidebar(tabId);
   }
 });
+async function injectSidebar(tabId) {
+  // Inject sidebar.html if not already present
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    func: async () => {
+      if (!document.getElementById("sidebar")) {
+        const res = await fetch(chrome.runtime.getURL("sidebar.html"));
+        const html = await res.text();
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        document.body.appendChild(div.firstElementChild);
+        console.log("[sidebar injection] sidebar.html injected");
+      }
+    },
+  });
 
+  // Inject sidebar.js
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ["sidebar.js"],
+  });
+}
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "devmate-get-ai-response") {
     console.log(
@@ -64,6 +76,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
 
     return true; // Required for async sendResponse
+  }
+  if (message.type === "prepare-summary") {
+    const sectionedText = extractSections(); // assuming this function exists
+    chrome.storage.local.set({ selectedSections: sectionedText });
   }
 });
 
@@ -83,31 +99,28 @@ async function analyzeWithOpenAI(text, apiKey) {
           "X-Title": "DevMate AI",
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1",
+          model: "deepseek/deepseek-r1-0528:free",
           messages: [
             {
               role: "system",
               content:
                 "You are a helpful assistant that explains text in simple terms.",
             },
-            {
-              role: "user",
-              content: text,
-            },
+            { role: "user", content: text },
           ],
           temperature: 0.7,
-          max_tokens: 4096,
+          max_tokens: 512,
         }),
       }
     );
 
     const data = await response.json();
-    console.log("[background.js] OpenRouter AI response:", data);
-    return (
-      data.choices?.[0]?.message?.content ||
-      data?.error?.message ||
-      "No explanation received."
-    );
+    console.log("[OpenRouter Response]", data);
+    const content = data.choices?.[0]?.message?.content?.trim();
+
+    return content && content.length > 0
+      ? content
+      : "⚠️ The AI response was empty. Try again or check your API quota.";
   } catch (err) {
     return "Error: " + err.message;
   }
