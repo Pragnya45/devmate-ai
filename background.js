@@ -70,9 +70,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get("openaiKey", async (data) => {
       const apiKey = data.openaiKey;
       console.log(apiKey);
-      const result = await analyzeWithOpenAI(message.prompt, apiKey);
+      const result = await analyzeWithOpenAI(
+        message.prompt,
+        message.mode,
+        apiKey
+      );
       console.log("[background.js] AI response received:", result);
-      sendResponse({ result });
+      const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+      const links = [];
+      let match;
+      while ((match = linkRegex.exec(result)) !== null) {
+        links.push({ title: match[1], url: match[2] });
+      }
+      sendResponse({ result, links });
     });
 
     return true; // Required for async sendResponse
@@ -83,7 +93,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-async function analyzeWithOpenAI(text, apiKey) {
+async function analyzeWithOpenAI(text, mode, apiKey) {
   console.log(
     "[background.js] Sending request to OpenRouter AI for text:",
     text
@@ -104,12 +114,15 @@ async function analyzeWithOpenAI(text, apiKey) {
             {
               role: "system",
               content:
-                "You are a helpful assistant that explains text in simple terms.",
+                "You are an expert web assistant that explains content and finds trusted links on a topic.",
             },
-            { role: "user", content: text },
+            {
+              role: "user",
+              content: `Explain the following text and give 3 trusted links (titles + URLs) about it:\n\n"${text}"`,
+            },
           ],
           temperature: 0.7,
-          max_tokens: 512,
+          max_tokens: 4089,
         }),
       }
     );

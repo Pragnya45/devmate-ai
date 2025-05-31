@@ -1,5 +1,7 @@
-// Inject CSS styles for sidebar UI
-const devmateSidebarStyles = `
+(() => {
+  if (window.__devmateSidebarInjected) return; // Prevent reinjection
+  window.__devmateSidebarInjected = true;
+  const devmateSidebarStyles = `
   #sidebar {
     position: fixed;
     top: 0;
@@ -131,6 +133,11 @@ const devmateSidebarStyles = `
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     margin-top: 15px;
     margin-bottom: 20px;
+    word-wrap: break-word;
+overflow-wrap: anywhere;
+white-space: normal;
+word-break: break-word;
+}
   }
 
   #trustedLinks h4 {
@@ -197,165 +204,174 @@ const devmateSidebarStyles = `
 
 `;
 
-if (!document.getElementById("devmate-style-tag")) {
-  const styleTag = document.createElement("style");
-  styleTag.id = "devmate-style-tag"; // give it a unique ID
-  styleTag.textContent = devmateSidebarStyles;
-  document.head.appendChild(styleTag);
-}
-
-const sidebar = document.getElementById("sidebar");
-const resizer = document.getElementById("resizer");
-let isResizing = false;
-
-resizer?.addEventListener("mousedown", () => {
-  isResizing = true;
-  document.body.style.cursor = "ew-resize";
-  document.body.style.userSelect = "none";
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!isResizing) return;
-  const newWidth = window.innerWidth - e.clientX;
-  if (newWidth >= 250 && newWidth <= 800) {
-    sidebar.style.width = `${newWidth}px`;
+  if (!document.getElementById("devmate-style-tag")) {
+    const styleTag = document.createElement("style");
+    styleTag.id = "devmate-style-tag"; // give it a unique ID
+    styleTag.textContent = devmateSidebarStyles;
+    document.head.appendChild(styleTag);
   }
-});
 
-document.addEventListener("mouseup", () => {
-  if (isResizing) {
-    isResizing = false;
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-  }
-});
+  const sidebar = document.getElementById("sidebar");
+  const resizer = document.getElementById("resizer");
+  let isResizing = false;
 
-document.getElementById("closeSidebar")?.addEventListener("click", () => {
-  document.getElementById("sidebar")?.remove();
-  console.log("[sidebar.js] Sidebar closed");
-});
+  resizer?.addEventListener("mousedown", () => {
+    isResizing = true;
+    document.body.style.cursor = "ew-resize";
+    document.body.style.userSelect = "none";
+  });
 
-const loadingSpinner = document.getElementById("loadingSpinner");
-const aiResponseContent = document.getElementById("aiResponseContent");
-const aiBox = document.getElementById("aiResponseBox");
-const wikiSummaryDiv = document.getElementById("wikiSummary");
-const wikiContentDiv = document.getElementById("wikiContent");
-const trustedLinksDiv = document.getElementById("trustedLinks");
-const linkList = document.getElementById("linkList");
-const explanationsContainer = document.getElementById("explanations-container");
+  document.addEventListener("mousemove", (e) => {
+    if (!isResizing) return;
+    const newWidth = window.innerWidth - e.clientX;
+    if (newWidth >= 250 && newWidth <= 800) {
+      sidebar.style.width = `${newWidth}px`;
+    }
+  });
 
-loadingSpinner.style.display = "flex";
-aiBox.style.display = "none";
-aiResponseContent.style.display = "none";
-wikiSummaryDiv.style.display = "none";
-trustedLinksDiv.style.display = "none";
+  document.addEventListener("mouseup", () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+  });
 
-chrome.storage.local.get(["selectedText"], async ({ selectedText }) => {
-  if (!selectedText) {
-    aiResponseContent.textContent = "No text selected or transcript found.";
-    loadingSpinner.style.display = "none";
-    document.getElementById("aiResponseBox").style.display = "block";
-    aiResponseContent.style.display = "block";
-    aiBox.style.display = "block";
-    return;
-  }
-  async function fetchWikipediaSummary(query) {
-    console.log("[sidebar.js] Fetching Wikipedia summary for:", query);
+  document.getElementById("closeSidebar")?.addEventListener("click", () => {
+    document.getElementById("sidebar")?.remove();
+    console.log("[sidebar.js] Sidebar closed");
+  });
 
-    try {
-      const res = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-          query
-        )}`
-      );
-      console.log("[sidebar.js] Wikipedia API response:", res);
-      if (!res.ok) return null;
-      const data = await res.json();
-      console.log("[sidebar.js] Wikipedia API JSON data:", data);
-      if (
-        data.description === "Topics referred to by the same term" ||
-        !data.extract
-      ) {
-        console.log("[sidebar.js] Skipping disambiguation or empty summary.");
+  const loadingSpinner = document.getElementById("loadingSpinner");
+  const aiResponseContent = document.getElementById("aiResponseContent");
+  const aiBox = document.getElementById("aiResponseBox");
+  const wikiSummaryDiv = document.getElementById("wikiSummary");
+  const wikiContentDiv = document.getElementById("wikiContent");
+  const trustedLinksDiv = document.getElementById("trustedLinks");
+  const linkList = document.getElementById("linkList");
+  const explanationsContainer = document.getElementById(
+    "explanations-container"
+  );
+
+  loadingSpinner.style.display = "flex";
+  aiBox.style.display = "none";
+  aiResponseContent.style.display = "none";
+  wikiSummaryDiv.style.display = "none";
+  trustedLinksDiv.style.display = "none";
+
+  chrome.storage.local.get(["selectedText"], async ({ selectedText }) => {
+    if (!selectedText) {
+      aiResponseContent.textContent = "No text selected or transcript found.";
+      loadingSpinner.style.display = "none";
+      document.getElementById("aiResponseBox").style.display = "block";
+      aiResponseContent.style.display = "block";
+      aiBox.style.display = "block";
+      return;
+    }
+    async function fetchWikipediaSummary(query) {
+      console.log("[sidebar.js] Fetching Wikipedia summary for:", query);
+
+      try {
+        const res = await fetch(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+            query
+          )}`
+        );
+        console.log("[sidebar.js] Wikipedia API response:", res);
+        if (!res.ok) return null;
+        const data = await res.json();
+        console.log("[sidebar.js] Wikipedia API JSON data:", data);
+        if (
+          data.description === "Topics referred to by the same term" ||
+          !data.extract
+        ) {
+          console.log("[sidebar.js] Skipping disambiguation or empty summary.");
+          return null;
+        }
+        return data.extract || null;
+      } catch {
         return null;
       }
-      return data.extract || null;
-    } catch {
-      return null;
     }
-  }
 
-  // Trusted links generator
-  function getTrustedLinks(query) {
-    console.log("[sidebar.js] Generating trusted links for:", query);
-    return [
+    // Trusted links generator
+    function getTrustedLinks(links, query) {
+      console.log("[sidebar.js] Generating trusted links for:", query);
+      return [
+        ...links,
+        {
+          title: `Google Search: ${query}`,
+          url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+        },
+        {
+          title: `Wikipedia: ${query}`,
+          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
+        },
+        {
+          title: `PubMed Search: ${query}`,
+          url: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(
+            query
+          )}`,
+        },
+      ];
+    }
+    const mode = selectedText.length > 200 ? "sectioned" : "simple";
+    chrome.runtime.sendMessage(
       {
-        title: `Google Search: ${query}`,
-        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+        type: "devmate-get-ai-response",
+        prompt: selectedText,
+        mode,
       },
-      {
-        title: `Wikipedia: ${query}`,
-        url: `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-      },
-      {
-        title: `PubMed Search: ${query}`,
-        url: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(
-          query
-        )}`,
-      },
-    ];
-  }
-  const mode = selectedText.length > 200 ? "sectioned" : "simple";
-  chrome.runtime.sendMessage(
-    {
-      type: "devmate-get-ai-response",
-      prompt: selectedText,
-      mode,
-    },
-    async (response) => {
-      const aiResult = response?.result || "No response from AI.";
-      loadingSpinner.style.display = "none";
-      aiResponseContent.textContent = aiResult;
-      if (Array.isArray(aiResult)) {
-        renderExplanations(aiResult); // structured sections
-        // document.getElementById("explanations-container").style.display =
-        //   "block";
-      } else {
-        aiResponseContent.textContent = aiResult || "No response from AI.";
-        aiResponseContent.style.display = "block";
-      }
-      aiBox.style.display = "block";
-      if (mode !== "sectioned") {
-        const wikiSummary = await fetchWikipediaSummary(selectedText);
-        if (wikiSummary) {
-          wikiContentDiv.textContent = wikiSummary;
-          wikiSummaryDiv.style.display = "block";
+      async (response) => {
+        const aiResult = response?.result || "No response from AI.";
+        const links = response?.links || [];
+        loadingSpinner.style.display = "none";
+        aiResponseContent.textContent = aiResult;
+        if (Array.isArray(aiResult)) {
+          renderExplanations(aiResult); // structured sections
+          // document.getElementById("explanations-container").style.display =
+          //   "block";
+        } else {
+          aiResponseContent.textContent = aiResult || "No response from AI.";
+          aiResponseContent.style.display = "block";
         }
+        aiBox.style.display = "block";
+        if (mode !== "sectioned") {
+          const wikiSummary = await fetchWikipediaSummary(selectedText);
+          if (wikiSummary) {
+            wikiContentDiv.textContent = wikiSummary;
+            wikiSummaryDiv.style.display = "block";
+          }
 
-        const trustedLinks = getTrustedLinks(selectedText);
-        linkList.innerHTML = "";
-        trustedLinks.forEach(({ title, url }) => {
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>`;
-          linkList.appendChild(li);
-        });
-        trustedLinksDiv.style.display = "block";
+          const trustedLinks =
+            Array.isArray(links) && links.length > 0
+              ? links // AI-generated links
+              : getTrustedLinks([], selectedText); // fallback links if AI doesn't return any
+
+          linkList.innerHTML = "";
+          trustedLinks.forEach(({ title, url }) => {
+            const li = document.createElement("li");
+            li.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>`;
+            linkList.appendChild(li);
+          });
+          trustedLinksDiv.style.display = "block";
+        }
       }
-    }
-  );
-});
+    );
+  });
 
-function renderExplanations(explanations) {
-  explanationsContainer.innerHTML = "";
-  explanationsContainer.style.display = "block";
-  aiResult.forEach(({ id, explanation }) => {
-    const section = document.createElement("div");
-    section.innerHTML = `
+  function renderExplanations(explanations) {
+    explanationsContainer.innerHTML = "";
+    explanationsContainer.style.display = "block";
+    aiResult.forEach(({ id, explanation }) => {
+      const section = document.createElement("div");
+      section.innerHTML = `
           <button class="toggle-btn">Section ${id}</button>
           <div class="explanation hidden">${explanation}</div>`;
-    section.querySelector("button").onclick = () => {
-      section.querySelector(".explanation").classList.toggle("hidden");
-    };
-    explanationsContainer.appendChild(section);
-  });
-}
+      section.querySelector("button").onclick = () => {
+        section.querySelector(".explanation").classList.toggle("hidden");
+      };
+      explanationsContainer.appendChild(section);
+    });
+  }
+})();

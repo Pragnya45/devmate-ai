@@ -20,7 +20,7 @@ async function askOpenAI(prompt) {
           "X-Title": "Explain Selected Text", // Optional: Title for your application
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1",
+          model: "deepseek/deepseek-r1-0528:free",
           messages: [
             {
               role: "system",
@@ -33,7 +33,7 @@ async function askOpenAI(prompt) {
             },
           ],
           temperature: 0.7,
-          max_tokens: 4096,
+          max_tokens: 2048,
         }),
       }
     );
