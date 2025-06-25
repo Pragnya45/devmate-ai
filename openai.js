@@ -39,7 +39,6 @@ async function askOpenAI(prompt) {
     );
 
     const data = await response.json();
-    console.log("OpenRouter response:", data);
 
     return (
       data.choices?.[0]?.message?.content ||

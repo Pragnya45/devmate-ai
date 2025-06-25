@@ -1,4 +1,3 @@
-console.log("[background.js] Script loaded");
 fetch(chrome.runtime.getURL("config.json"))
   .then((res) => res.json())
   .then((config) => {
@@ -6,7 +5,6 @@ fetch(chrome.runtime.getURL("config.json"))
   });
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("[background.js] onInstalled event fired");
   chrome.contextMenus.create({
     id: "devmate-analyze",
     title: "Ask DevMate AI",
@@ -22,10 +20,6 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const tabId = tab.id;
   if (info.menuItemId === "devmate-analyze") {
-    console.log(
-      "[background.js] Context menu clicked with selected text:",
-      info.selectionText
-    );
     const selectedText = info.selectionText;
     await chrome.storage.local.set({ selectedText });
     await injectSidebar(tabId);
@@ -50,7 +44,6 @@ async function injectSidebar(tabId) {
         const div = document.createElement("div");
         div.innerHTML = html;
         document.body.appendChild(div.firstElementChild);
-        console.log("[sidebar injection] sidebar.html injected");
       }
     },
   });
@@ -63,19 +56,13 @@ async function injectSidebar(tabId) {
 }
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "devmate-get-ai-response") {
-    console.log(
-      "[background.js] Received AI request with prompt:",
-      message.prompt
-    );
     chrome.storage.local.get("openaiKey", async (data) => {
       const apiKey = data.openaiKey;
-      console.log(apiKey);
       const result = await analyzeWithOpenAI(
         message.prompt,
         message.mode,
         apiKey
       );
-      console.log("[background.js] AI response received:", result);
       const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
       const links = [];
       let match;
@@ -94,10 +81,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function analyzeWithOpenAI(text, mode, apiKey) {
-  console.log(
-    "[background.js] Sending request to OpenRouter AI for text:",
-    text
-  );
   try {
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -128,7 +111,6 @@ async function analyzeWithOpenAI(text, mode, apiKey) {
     );
 
     const data = await response.json();
-    console.log("[OpenRouter Response]", data);
     const content = data.choices?.[0]?.message?.content?.trim();
 
     return content && content.length > 0

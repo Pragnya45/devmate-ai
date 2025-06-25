@@ -239,7 +239,6 @@ word-break: break-word;
 
   document.getElementById("closeSidebar")?.addEventListener("click", () => {
     document.getElementById("sidebar")?.remove();
-    console.log("[sidebar.js] Sidebar closed");
   });
 
   const loadingSpinner = document.getElementById("loadingSpinner");
@@ -269,23 +268,18 @@ word-break: break-word;
       return;
     }
     async function fetchWikipediaSummary(query) {
-      console.log("[sidebar.js] Fetching Wikipedia summary for:", query);
-
       try {
         const res = await fetch(
           `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
             query
           )}`
         );
-        console.log("[sidebar.js] Wikipedia API response:", res);
         if (!res.ok) return null;
         const data = await res.json();
-        console.log("[sidebar.js] Wikipedia API JSON data:", data);
         if (
           data.description === "Topics referred to by the same term" ||
           !data.extract
         ) {
-          console.log("[sidebar.js] Skipping disambiguation or empty summary.");
           return null;
         }
         return data.extract || null;
@@ -296,7 +290,6 @@ word-break: break-word;
 
     // Trusted links generator
     function getTrustedLinks(links, query) {
-      console.log("[sidebar.js] Generating trusted links for:", query);
       return [
         ...links,
         {
