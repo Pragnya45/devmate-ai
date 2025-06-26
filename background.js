@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
   chrome.contextMenus.create({
     id: "summarize-page",
-    title: "🧠 Summarize This Page",
+    title: "Summarize This Page",
     contexts: ["page"],
   });
 });
@@ -30,6 +30,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       target: { tabId: tab.id },
       files: ["content.js"],
     });
+    const waitForExtraction = new Promise((resolve) => {
+      chrome.runtime.onMessage.addListener(function listener(message) {
+        if (message.type === "text-extraction-complete") {
+          chrome.runtime.onMessage.removeListener(listener);
+          resolve();
+        }
+      });
+    });
+
+    await waitForExtraction;
     await injectSidebar(tabId);
   }
 });
@@ -74,10 +84,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     return true; // Required for async sendResponse
   }
-  if (message.type === "prepare-summary") {
-    const sectionedText = extractSections(); // assuming this function exists
-    chrome.storage.local.set({ selectedSections: sectionedText });
-  }
+  // if (message.type === "prepare-summary") {
+  //   const sectionedText = extractSections(); // assuming this function exists
+  //   chrome.storage.local.set({ selectedSections: sectionedText });
+  // }
 });
 
 async function analyzeWithOpenAI(text, mode, apiKey) {

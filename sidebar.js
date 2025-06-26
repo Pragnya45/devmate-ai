@@ -125,51 +125,6 @@
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  #trustedLinks {
-    background: rgba(255, 255, 255, 0.12);
-    padding: 15px;
-    border-radius: 12px;
-    color: #fff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    margin-top: 15px;
-    margin-bottom: 20px;
-    word-wrap: break-word;
-overflow-wrap: anywhere;
-white-space: normal;
-word-break: break-word;
-}
-  }
-
-  #trustedLinks h4 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #fff;
-  }
-
-  #linkList {
-    list-style-type: disc;
-    padding-left: 20px;
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px;
-  }
-
-  #linkList li {
-    margin-bottom: 8px;
-  }
-
-  #linkList a {
-    color: #000;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: underline;
-    transition: color 0.3s ease;
-  }
-
-  #linkList a:hover {
-    color: #0077ff;
-  }
-
   #resizer {
     position: absolute;
     left: -5px;
@@ -246,8 +201,6 @@ word-break: break-word;
   const aiBox = document.getElementById("aiResponseBox");
   const wikiSummaryDiv = document.getElementById("wikiSummary");
   const wikiContentDiv = document.getElementById("wikiContent");
-  const trustedLinksDiv = document.getElementById("trustedLinks");
-  const linkList = document.getElementById("linkList");
   const explanationsContainer = document.getElementById(
     "explanations-container"
   );
@@ -256,7 +209,6 @@ word-break: break-word;
   aiBox.style.display = "none";
   aiResponseContent.style.display = "none";
   wikiSummaryDiv.style.display = "none";
-  trustedLinksDiv.style.display = "none";
 
   chrome.storage.local.get(["selectedText"], async ({ selectedText }) => {
     if (!selectedText) {
@@ -288,26 +240,6 @@ word-break: break-word;
       }
     }
 
-    // Trusted links generator
-    function getTrustedLinks(links, query) {
-      return [
-        ...links,
-        {
-          title: `Google Search: ${query}`,
-          url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-        },
-        {
-          title: `Wikipedia: ${query}`,
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-        },
-        {
-          title: `PubMed Search: ${query}`,
-          url: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(
-            query
-          )}`,
-        },
-      ];
-    }
     const mode = selectedText.length > 200 ? "sectioned" : "simple";
     chrome.runtime.sendMessage(
       {
@@ -320,6 +252,7 @@ word-break: break-word;
         const links = response?.links || [];
         loadingSpinner.style.display = "none";
         aiResponseContent.textContent = aiResult;
+
         if (Array.isArray(aiResult)) {
           renderExplanations(aiResult); // structured sections
           // document.getElementById("explanations-container").style.display =
@@ -336,18 +269,14 @@ word-break: break-word;
             wikiSummaryDiv.style.display = "block";
           }
 
-          const trustedLinks =
-            Array.isArray(links) && links.length > 0
-              ? links // AI-generated links
-              : getTrustedLinks([], selectedText); // fallback links if AI doesn't return any
-
-          linkList.innerHTML = "";
-          trustedLinks.forEach(({ title, url }) => {
-            const li = document.createElement("li");
-            li.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>`;
-            linkList.appendChild(li);
-          });
-          trustedLinksDiv.style.display = "block";
+          // const trustedLinks =
+          //   Array.isArray(links) && links.length > 0 && links; // AI-generated links // fallback links if AI doesn't return any
+          // linkList.innerHTML = "";
+          // trustedLinks.forEach(({ title, url }) => {
+          //   const li = document.createElement("li");
+          //   li.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a>`;
+          //   linkList.appendChild(li);
+          // });
         }
       }
     );

@@ -26,4 +26,5 @@
 
   const fullText = extractVisibleText();
   chrome.storage.local.set({ selectedText: fullText });
+  chrome.runtime.sendMessage({ type: "text-extraction-complete" });
 })();
